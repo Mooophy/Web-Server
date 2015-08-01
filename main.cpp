@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -28,7 +27,7 @@ int main()
     int s,n;
     unsigned fd;
     struct sockaddr_in my_addr;
-    char *header="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+    const char *header="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
     char data[512];
     char filename[256];
     FILE *f;
