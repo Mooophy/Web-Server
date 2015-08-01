@@ -1,6 +1,3 @@
-//
-// Assignment 1 startup code for Unix type systems (Mac, Linux)
-//
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
