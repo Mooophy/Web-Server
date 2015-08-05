@@ -23,7 +23,7 @@
 //
 class ThreadPool {
 public:
-    ThreadPool(size_t);
+    ThreadPool(size_t = std::hardware_concurrency());
     template<class F, class... Args>
     auto enqueue(F&& f, Args&&... args) 
         -> std::future<typename std::result_of<F(Args...)>::type>;
@@ -103,6 +103,10 @@ inline ThreadPool::~ThreadPool()
     for(std::thread &worker: workers)
         worker.join();
 }
+//
+//  End-ThreadPool
+//
+
 template <typename T>
 void send_file(std::string const& filename, T const& socket)
 {
