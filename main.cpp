@@ -40,7 +40,7 @@ namespace ccur
         bool stop;
     };
 
-// the constructor just launches some amount of workers
+    // the constructor just launches some amount of workers
     inline ThreadPool::ThreadPool(size_t threads)
             : stop(false) {
         for (size_t i = 0; i < threads; ++i)
@@ -65,7 +65,7 @@ namespace ccur
             );
     }
 
-// add new work item to the pool
+    // add new work item to the pool
     template<class F, class... Args>
     auto ThreadPool::enqueue(F &&f, Args &&... args)
     -> std::future<typename std::result_of<F(Args...)>::type> {
@@ -89,7 +89,7 @@ namespace ccur
         return res;
     }
 
-// the destructor joins all threads
+    // the destructor joins all threads
     inline ThreadPool::~ThreadPool() {
         {
             std::unique_lock<std::mutex> lock(queue_mutex);
@@ -101,32 +101,35 @@ namespace ccur
     }
 
     template<typename Socket>
-    void send_file(std::string const &filename, Socket const &socket) {
+    void send_file(std::string const &filename, Socket const &socket)
+    {
         std::ifstream ifs{filename};
-        for (std::string str; ifs >> str;) {
+        for (std::string str; ifs >> str;)
+        {
             auto msg = str + "\r\n";
             send(socket, msg.c_str(), msg.size(), 0);
         }
     }
-}
+}// end of namespace ccur
+
 // Define the port number to identify this process
 #define MYPORT 3490
 
 int main()
 {
-    struct sockaddr_in my_addr;
+    struct sockaddr_in addr;
     const std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
 
     // Construct address information
-    my_addr.sin_family = AF_INET;
-    my_addr.sin_port = htons(MYPORT);
-    my_addr.sin_addr.s_addr = INADDR_ANY;
-    memset(my_addr.sin_zero, '\0', sizeof(my_addr.sin_zero) );
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(MYPORT);
+    addr.sin_addr.s_addr = INADDR_ANY;
+    memset( addr.sin_zero, '\0', sizeof(addr.sin_zero) );
 
     // Create a socket and bind it the port MYPORT
     auto soc = socket(PF_INET,SOCK_STREAM, 0);
-    bind(soc, (struct sockaddr *)&my_addr, sizeof(my_addr));
-    printf("%d", my_addr.sin_port);
+    bind(soc, (struct sockaddr *)&addr, sizeof(addr));
+    printf("%d", addr.sin_port);
 
     // Allow up to 10 incoming connections
     const auto limit = 10;
