@@ -162,6 +162,7 @@ int main()
             send_file(filename, fd);
             close(fd);                    // close the socket
         };
+        
         pool.enqueue(request_handler);
     }
 }
