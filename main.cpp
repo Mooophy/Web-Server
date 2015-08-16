@@ -18,13 +18,13 @@
 
 namespace cnc
 {
-    class ThreadPool {
+    class ThreadPool
+    {
     public:
         ThreadPool(size_t);
 
         template<class F, class... Args>
-        auto enqueue(F &&f, Args &&... args)
-                -> std::future<typename std::result_of<F(Args...)>::type>;
+        auto enqueue(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
         ~ThreadPool();
 
@@ -32,7 +32,7 @@ namespace cnc
         // need to keep track of threads so we can join them
         std::vector<std::thread> workers;
         // the task queue
-        std::queue<std::function<void()> > tasks;
+        std::queue<std::function<void()>> tasks;
 
         // synchronization
         std::mutex queue_mutex;
@@ -67,11 +67,11 @@ namespace cnc
 
     // add new work item to the pool
     template<class F, class... Args>
-    auto ThreadPool::enqueue(F &&f, Args &&... args)
-    -> std::future<typename std::result_of<F(Args...)>::type> {
+    auto ThreadPool::enqueue(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type> {
         using return_type = typename std::result_of<F(Args...)>::type;
 
-        auto task = std::make_shared<std::packaged_task<return_type()> >(
+        auto task = std::make_shared<std::packaged_task<return_type()>>
+        (
                 std::bind(std::forward<F>(f), std::forward<Args>(args)...)
         );
 
@@ -90,14 +90,14 @@ namespace cnc
     }
 
     // the destructor joins all threads
-    inline ThreadPool::~ThreadPool() {
+    inline ThreadPool::~ThreadPool()
+    {
         {
             std::unique_lock<std::mutex> lock(queue_mutex);
             stop = true;
         }
         condition.notify_all();
-        for (std::thread &worker: workers)
-            worker.join();
+        for (auto& worker: workers) worker.join();
     }
 
     template<typename Socket>
@@ -112,11 +112,9 @@ namespace cnc
     }
 }// end of namespace ccur
 
-// Define the port number to identify this process
-#define PORT 3490
-
 int main()
 {
+    const auto PORT = 3490;
     struct sockaddr_in addr;
 
     // Construct address information
@@ -132,12 +130,11 @@ int main()
 
     // Allow up to 10 incoming connections
     const auto limit = 10;
-    cnc::ThreadPool pool{ limit };
     listen(soc,limit);
     std::cout << "listenning\n";
 
     const std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-    while(1)
+    for(cnc::ThreadPool pool{ limit }; true;)
     {
         auto request_handler = [&] (int socket) {
             char data[512];
