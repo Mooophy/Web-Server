@@ -16,7 +16,7 @@
 #include <condition_variable>
 #include <future>
 
-namespace ccur
+namespace cnc
 {
     class ThreadPool {
     public:
@@ -118,7 +118,6 @@ namespace ccur
 int main()
 {
     struct sockaddr_in addr;
-    const std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
 
     // Construct address information
     addr.sin_family = AF_INET;
@@ -133,13 +132,14 @@ int main()
 
     // Allow up to 10 incoming connections
     const auto limit = 10;
-    ccur::ThreadPool pool{ limit };
+    cnc::ThreadPool pool{ limit };
     listen(soc,limit);
     std::cout << "listenning\n";
 
+    const std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
     while(1)
     {
-        auto request_handler = [&] (int socket){
+        auto request_handler = [&] (int socket) {
             char data[512];
             char filename[256];
             auto size = recv(socket, data, 512, 0);              // recieve the request using fd
@@ -147,7 +147,7 @@ int main()
             sscanf(data, "GET /%s ", filename);   // get the name of the file
             send(socket, header.c_str(), header.size(), 0);
             std::this_thread::sleep_for(std::chrono::seconds(10));
-            ccur::send_file(filename, socket);
+            cnc::send_file(filename, socket);
             close(socket);                    // close the socket
         };
 
