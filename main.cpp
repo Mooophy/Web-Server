@@ -104,9 +104,9 @@ template <typename Socket>
 void send_file(std::string const& filename, Socket const& socket)
 {
     std::ifstream ifs{ filename };
-    for(std::string s; ifs >> s; )
+    for(std::string str; ifs >> str; )
     {
-        auto msg = s + "\r\n";
+        auto msg = str + "\r\n";
         send(socket, msg.c_str(), msg.size(), 0);
     }
 }
@@ -116,9 +116,8 @@ void send_file(std::string const& filename, Socket const& socket)
 
 int main()
 {
-//    int s;
     struct sockaddr_in my_addr;
-    const char *header="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+    const std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
 
     // Construct address information
     my_addr.sin_family = AF_INET;
@@ -145,7 +144,7 @@ int main()
             auto n = recv(socket, data, 512, 0);              // recieve the request using fd
             data[n] = 0;                          // NUL terminate it
             sscanf(data, "GET /%s ", filename);   // get the name of the file
-            send(socket, header, strlen(header), 0);   // send the header
+            send(socket, header.c_str(), header.size(), 0);
             std::this_thread::sleep_for(std::chrono::seconds(10));
             send_file(filename, socket);
             close(socket);                    // close the socket
