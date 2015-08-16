@@ -113,7 +113,7 @@ namespace ccur
 }// end of namespace ccur
 
 // Define the port number to identify this process
-#define MYPORT 3490
+#define PORT 3490
 
 int main()
 {
@@ -122,11 +122,11 @@ int main()
 
     // Construct address information
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(MYPORT);
+    addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
     memset( addr.sin_zero, '\0', sizeof(addr.sin_zero) );
 
-    // Create a socket and bind it the port MYPORT
+    // Create a socket and bind it the port PORT
     auto soc = socket(PF_INET,SOCK_STREAM, 0);
     bind(soc, (struct sockaddr *)&addr, sizeof(addr));
     printf("%d", addr.sin_port);
