@@ -1,24 +1,20 @@
+//c and posix
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+//c++
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <thread>
-#include <chrono>
-
 #include <vector>
 #include <queue>
-#include <memory>
-#include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <future>
-#include <functional>
-#include <stdexcept>
 
 class ThreadPool {
 public:
@@ -120,12 +116,9 @@ void send_file(std::string const& filename, Socket const& socket)
 
 int main()
 {
-    int s;
-    unsigned fd;
+//    int s;
     struct sockaddr_in my_addr;
     const char *header="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-
-    FILE *f;
 
     // Construct address information
     my_addr.sin_family = AF_INET;
@@ -134,35 +127,30 @@ int main()
     memset(my_addr.sin_zero, '\0', sizeof(my_addr.sin_zero) );
 
     // Create a socket and bind it the port MYPORT
-    s=socket(PF_INET,SOCK_STREAM, 0);
-    bind(s, (struct sockaddr *)&my_addr, sizeof(my_addr));
+    auto soc = socket(PF_INET,SOCK_STREAM, 0);
+    bind(soc, (struct sockaddr *)&my_addr, sizeof(my_addr));
     printf("%d", my_addr.sin_port);
 
     // Allow up to 10 incoming connections
     const auto limit = 10;
-    ThreadPool pool{ 10 };
-    listen(s,limit);
+    ThreadPool pool{ limit };
+    listen(soc,limit);
     std::cout << "listenning\n";
 
     while(1)
     {
-        fd=accept(s,NULL,NULL);             // wait for a request
-        std::cout << "accepted a request\n";
-
-        auto request_handler = [&] {
-            std::cout << "inside thread\n";
-
+        auto request_handler = [&] (int socket){
             char data[512];
             char filename[256];
-            auto n = recv(fd, data, 512, 0);              // recieve the request using fd
+            auto n = recv(socket, data, 512, 0);              // recieve the request using fd
             data[n] = 0;                          // NUL terminate it
             sscanf(data, "GET /%s ", filename);   // get the name of the file
-            send(fd, header, strlen(header), 0);   // send the header
-            std::this_thread::sleep_for(std::chrono::seconds(3));
-            send_file(filename, fd);
-            close(fd);                    // close the socket
+            send(socket, header, strlen(header), 0);   // send the header
+            std::this_thread::sleep_for(std::chrono::seconds(10));
+            send_file(filename, socket);
+            close(socket);                    // close the socket
         };
-        
-        pool.enqueue(request_handler);
+
+        pool.enqueue(request_handler, accept(soc, NULL, NULL));
     }
 }
