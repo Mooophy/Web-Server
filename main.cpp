@@ -9,6 +9,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 #include <thread>
 #include <vector>
 #include <queue>
@@ -110,11 +111,25 @@ namespace cnc
             send(socket, msg.c_str(), msg.size(), 0);
         }
     }
+
+    template <typename StatusCode>
+    auto make_reply_header(StatusCode code) -> std::string
+    {
+        const static std::unordered_map<StatusCode, std::string> status
+                {
+                        {200, "200 OK"},
+                        {404, "404 Not Found"},
+                        {501, "501 Not Implemented"}
+                };
+
+        return status.at(code);
+    }
+
 }// end of namespace ccur
 
 int main()
 {
-    const auto PORT = 3490;
+    auto const PORT = 3490;
     struct sockaddr_in addr;
 
     // Construct address information
@@ -124,28 +139,28 @@ int main()
     memset( addr.sin_zero, '\0', sizeof(addr.sin_zero) );
 
     // Create a socket and bind it the port PORT
-    auto soc = socket(PF_INET,SOCK_STREAM, 0);
+    auto const soc = socket(PF_INET,SOCK_STREAM, 0);
     bind(soc, (struct sockaddr *)&addr, sizeof(addr));
     printf("%d", addr.sin_port);
 
     // Allow up to 10 incoming connections
-    const auto limit = 10;
+    auto const limit = 10;
     listen(soc,limit);
     std::cout << "listenning\n";
 
-    const std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+    auto const header = cnc::make_reply_header(200);
     for(cnc::ThreadPool pool{ limit }; true;)
     {
         auto request_handler = [&] (int socket) {
             char data[512];
             char filename[256];
-            auto size = recv(socket, data, 512, 0);              // recieve the request using fd
-            data[size] = 0;                          // NUL terminate it
-            sscanf(data, "GET /%s ", filename);   // get the name of the file
+            auto size = recv(socket, data, 512, 0);                 // recieve the request using fd
+            data[size] = 0;                                         // NUL terminate it
+            sscanf(data, "GET /%s ", filename);                     // get the name of the file
             send(socket, header.c_str(), header.size(), 0);
             std::this_thread::sleep_for(std::chrono::seconds(10));
             cnc::send_file(filename, socket);
-            close(socket);                    // close the socket
+            close(socket);                                          // close the socket
         };
 
         pool.enqueue(request_handler, accept(soc, NULL, NULL));
