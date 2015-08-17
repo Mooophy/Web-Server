@@ -15,7 +15,7 @@
  *                  main function.
  *              5.  For multithreading, a thread pool was implemented based on an open source code on Github.com :
  *                      https://github.com/progschj/ThreadPool
- *              6.  Please not the log generated when running.
+ *              6.  Please note the log generated when running.
  *              7.  Check specific comments below for detailed information
  */
 
@@ -201,7 +201,7 @@ namespace cnc
         Server(Server &&)                   = delete ;
         Server& operator=(Server const&)    = delete ;
         Server& operator=(Server &&)        = delete ;
-        
+
     private:
         Socket const _socket;
         int const _port;
