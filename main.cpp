@@ -138,8 +138,7 @@ namespace cnc
     class Server
     {
     public:
-        explicit Server(int port_no, std::size_t incoming_limit, Integer max_times = 9999)
-                :
+        explicit Server(int port_no, std::size_t incoming_limit, Integer max_times = 9999) :
                 _socket{ init_socket(port_no) },
                 _port{ port_no },
                 _limit{ incoming_limit },
@@ -153,6 +152,11 @@ namespace cnc
         auto start( int delay ) -> Integer
         {
            return run(_max_times, delay);
+        }
+
+        ~Server()
+        {
+            close(_socket);
         }
 
     private:
