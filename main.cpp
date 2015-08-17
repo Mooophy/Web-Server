@@ -127,6 +127,13 @@ namespace cnc
         return "HTTP/1.1 "  + status.at(code) + "\r\nContent-Type: text/html\r\n\r\n";
     }
 
+    template <typename Socket>
+    void enable_port_reusable(Socket soc)
+    {
+        auto optval = 1;
+        setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+    }
+
 }// end of namespace ccur
 
 int main()
@@ -142,8 +149,7 @@ int main()
     // Create a socket and bind it the port PORT
     auto const soc = socket(PF_INET,SOCK_STREAM, 0);
 
-    auto optval = 1;
-    setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+    cnc::enable_port_reusable(soc);
     auto bind_result = bind(soc, (struct sockaddr *)&addr, sizeof(addr));
     if (bind_result != 0)
         printf("%d\n", errno);
