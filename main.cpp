@@ -134,7 +134,7 @@ namespace cnc
         setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
     }
 
-}// end of namespace ccur
+}// end of namespace cnc
 
 int main()
 {
@@ -154,9 +154,6 @@ int main()
     if (bind_result != 0)
         printf("%d\n", errno);
 
-//    bind(soc, (struct sockaddr *)&addr, sizeof(addr));
-//    printf("%d\n", addr.sin_port);
-
     // Allow up to 10 incoming connections
     auto const limit = 10;
     listen(soc,limit);
@@ -166,6 +163,8 @@ int main()
     for(cnc::ThreadPool pool{ limit }; true;)
     {
         auto request_handler = [&](int socket){
+            std::cout << "Thread[" << std::this_thread::get_id() << "] is working on socket ["  << socket << "]" << std::endl;
+
             char data[512];
             char filename[256];
             auto size = recv(socket, data, 512, 0);                 // recieve the request using fd
