@@ -132,9 +132,8 @@ namespace cnc
 int main()
 {
     auto const PORT = 3490;
-    struct sockaddr_in addr;
 
-    // Construct address information
+    struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
