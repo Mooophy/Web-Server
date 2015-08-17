@@ -124,7 +124,7 @@ namespace cnc
                         {501, "501 Not Implemented"}
                 };
 
-        return status.at(code);
+        return "HTTP/1.1 "  + status.at(code) + "\r\nContent-Type: text/html\r\n\r\n";
     }
 
 }// end of namespace ccur
@@ -141,8 +141,15 @@ int main()
 
     // Create a socket and bind it the port PORT
     auto const soc = socket(PF_INET,SOCK_STREAM, 0);
-    bind(soc, (struct sockaddr *)&addr, sizeof(addr));
-    printf("%d", addr.sin_port);
+
+    auto optval = 1;
+    setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+    auto bind_result = bind(soc, (struct sockaddr *)&addr, sizeof(addr));
+    if (bind_result != 0)
+        printf("%d\n", errno);
+
+//    bind(soc, (struct sockaddr *)&addr, sizeof(addr));
+//    printf("%d\n", addr.sin_port);
 
     // Allow up to 10 incoming connections
     auto const limit = 10;
@@ -152,14 +159,14 @@ int main()
     auto const header = cnc::make_reply_header(200);
     for(cnc::ThreadPool pool{ limit }; true;)
     {
-        auto request_handler = [&] (int socket){
+        auto request_handler = [&](int socket){
             char data[512];
             char filename[256];
             auto size = recv(socket, data, 512, 0);                 // recieve the request using fd
             data[size] = 0;                                         // NUL terminate it
             sscanf(data, "GET /%s ", filename);                     // get the name of the file
             send(socket, header.c_str(), header.size(), 0);
-            std::this_thread::sleep_for(std::chrono::seconds(10));
+            std::this_thread::sleep_for(std::chrono::seconds(2));
             cnc::send_file(filename, socket);
             close(socket);                                          // close the socket
         };
