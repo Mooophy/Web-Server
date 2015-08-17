@@ -1,5 +1,4 @@
 //for c and posix
-//#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -190,7 +189,8 @@ namespace cnc
             for(auto const header = cnc::make_reply_header(200); curr != 0; --curr)
             {
                 auto request_handler = [&](Socket socket){
-                    std::cout << "log -> Thread[" << std::this_thread::get_id() << "] is working on socket ["  << socket << "]" << std::endl;
+                    std::cout << "log -> Thread[" << std::this_thread::get_id()
+                              << "] is working on socket ["  << socket << "]" << std::endl;
 
                     char data[512];
                     char filename[256];
@@ -216,7 +216,7 @@ int main()
 {
     auto port = 3490;
     auto limit = 10u;
-    cnc::Server< int, long long > server{ port, limit};
+    cnc::Server< int, long long > server{ port, limit };
     std::cout << "log -> Server configed with port number [" << port << "] and at most [" << limit << "] connections\n";
 
     auto delay = 5u;
