@@ -220,6 +220,6 @@ int main()
     std::cout << "log -> Server configed with port number [" << port << "] and at most [" << limit << "] connections\n";
 
     auto delay = 5u;
-    std::cout << "log -> Server started with [" << delay << "] in each thread\n";
+    std::cout << "log -> Server started with [" << delay << "] seconds for each thread\n";
     server.start(delay);
 }
