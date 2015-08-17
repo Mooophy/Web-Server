@@ -1,11 +1,11 @@
-//c and posix
-#include <stdio.h>
+//for c and posix
+//#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-//c++
+//for c++
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -152,7 +152,7 @@ int main()
     cnc::enable_port_reusable(soc);
     auto bind_result = bind(soc, (struct sockaddr *)&addr, sizeof(addr));
     if (bind_result != 0)
-        printf("%d\n", errno);
+        std::cout << errno << std::endl;
 
     // Allow up to 10 incoming connections
     auto const limit = 10;
