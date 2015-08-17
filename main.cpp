@@ -1,10 +1,29 @@
-//for c and posix
+/**
+ * @filename    server.cpp
+ * @authors
+ * @date        Aug 18, 2015
+ * @notes       0.  This code was an exercise for assignment 1, 159.335 Operating Systems and Concurrent Programming.
+ *              1.  Instead of using pthread directly, this implementation used std::thread for concurrency.
+ *              2.  To compile :
+ *                      g++ -std=c++11 server.cpp -o server.out -pthread
+ *              3.  To run : (make sure html files have been placed in the working folder)
+ *                      ./server.out
+ *              3.  Tested on :
+ *                      Ubuntu 14.04 + g++ 4.84
+ *                      Ubuntu 14.04 + g++ 5.10
+ *              4.  To simplify testing, each thread sleeps a delay before handling request. The delay can be changed in
+ *                  main function.
+ *              5.  For multithreading, a thread pool was implemented based on an open source code on Github.com :
+ *                      https://github.com/progschj/ThreadPool
+ *              6.  Please not the log generated when running.
+ *              7.  Check specific comments below for detailed information
+ */
+
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-//for c++
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -16,8 +35,14 @@
 #include <condition_variable>
 #include <future>
 
+/**
+ * cnc stands for concurrency
+ */
 namespace cnc
 {
+    /**
+     * A thread pool
+     */
     class ThreadPool
     {
     public:
@@ -102,6 +127,9 @@ namespace cnc
         for (auto& worker: workers) worker.join();
     }
 
+    /**
+     * Send file using socket
+     */
     template<typename Socket>
     void send_file(std::string const &filename, Socket const &socket)
     {
@@ -113,6 +141,9 @@ namespace cnc
         }
     }
 
+    /**
+     * Mapping http status code to message.
+     */
     template <typename StatusCode>
     auto make_reply_header(StatusCode code) -> std::string
     {
@@ -126,6 +157,9 @@ namespace cnc
         return "HTTP/1.1 "  + status.at(code) + "\r\nContent-Type: text/html\r\n\r\n";
     }
 
+    /**
+     * Make port number reusable.
+     */
     template <typename Socket>
     void enable_port_reusable(Socket soc)
     {
@@ -133,10 +167,14 @@ namespace cnc
         setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
     }
 
+    /**
+     * An RAII style web server.
+     */
     template <typename Socket, typename Integer>
     class Server
     {
     public:
+        //ctor
         explicit Server(int port_no, std::size_t incoming_limit, Integer max_times = 9999) :
                 _socket{ init_socket(port_no) },
                 _port{ port_no },
@@ -147,15 +185,18 @@ namespace cnc
             listen(_socket, (int)incoming_limit);
         }
 
+        //start server with specified delay for each thread.
         auto start( int delay ) -> Integer
         {
            return run(_max_times, delay);
         }
 
+        //dtor
         ~Server()
         {
             close(_socket);
         }
+
 
     private:
         Socket const _socket;
@@ -164,6 +205,7 @@ namespace cnc
         ThreadPool _pool;
         Integer const _max_times;
 
+        //init and return socket
         auto init_socket(std::size_t port) const -> Socket
         {
             struct sockaddr_in addr;
@@ -183,6 +225,7 @@ namespace cnc
             return soc;
         }
 
+        //run server
         auto run(Integer const max, int delay) -> Integer
         {
             auto curr = max;
