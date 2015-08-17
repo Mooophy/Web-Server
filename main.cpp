@@ -146,7 +146,6 @@ namespace cnc
                 _max_times{ max_times }
         {
             listen(_socket, (int)incoming_limit);
-
         }
 
         auto start( int delay ) -> Integer
@@ -164,7 +163,7 @@ namespace cnc
         int const _port;
         std::size_t const _limit;
         ThreadPool _pool;
-        Integer _max_times;
+        Integer const _max_times;
 
         auto init_socket(std::size_t port) const -> Socket
         {
@@ -191,7 +190,7 @@ namespace cnc
             for(auto const header = cnc::make_reply_header(200); curr != 0; --curr)
             {
                 auto request_handler = [&](Socket socket){
-                    std::cout << "Thread[" << std::this_thread::get_id() << "] is working on socket ["  << socket << "]" << std::endl;
+                    std::cout << "log -> Thread[" << std::this_thread::get_id() << "] is working on socket ["  << socket << "]" << std::endl;
 
                     char data[512];
                     char filename[256];
@@ -209,7 +208,6 @@ namespace cnc
 
             return  max - curr;
         }
-
     };
 
 }// end of namespace cnc
@@ -219,48 +217,9 @@ int main()
     auto port = 3490;
     auto limit = 10u;
     cnc::Server< int, long long > server{ port, limit};
+    std::cout << "log -> Server configed with port number [" << port << "] and at most [" << limit << "] connections\n";
 
-    auto delay = 5;
+    auto delay = 5u;
+    std::cout << "log -> Server started with [" << delay << "] in each thread\n";
     server.start(delay);
-
-//    auto const PORT = 3490;
-//
-//    struct sockaddr_in addr;
-//    addr.sin_family = AF_INET;
-//    addr.sin_port = htons(PORT);
-//    addr.sin_addr.s_addr = INADDR_ANY;
-//    memset( addr.sin_zero, '\0', sizeof(addr.sin_zero) );
-//
-//    // Create a socket and bind it the port PORT
-//    auto const soc = socket(PF_INET,SOCK_STREAM, 0);
-//
-//    cnc::enable_port_reusable(soc);
-//    auto bind_result = bind(soc, (struct sockaddr *)&addr, sizeof(addr));
-//    if (bind_result != 0)
-//        std::cout << errno << std::endl;
-//
-//    // Allow up to 10 incoming connections
-//    auto const limit = 10;
-//    listen(soc,limit);
-//    std::cout << "listenning\n";
-//
-//    auto const header = cnc::make_reply_header(200);
-//    for(cnc::ThreadPool pool{ limit }; true;)
-//    {
-//        auto request_handler = [&](int socket){
-//            std::cout << "Thread[" << std::this_thread::get_id() << "] is working on socket ["  << socket << "]" << std::endl;
-//
-//            char data[512];
-//            char filename[256];
-//            auto size = recv(socket, data, 512, 0);                 // recieve the request using fd
-//            data[size] = 0;                                         // NUL terminate it
-//            sscanf(data, "GET /%s ", filename);                     // get the name of the file
-//            send(socket, header.c_str(), header.size(), 0);
-//            std::this_thread::sleep_for(std::chrono::seconds(2));
-//            cnc::send_file(filename, socket);
-//            close(socket);                                          // close the socket
-//        };
-//
-//        pool.enqueue(request_handler, accept(soc, NULL, NULL));
-//    }
 }
