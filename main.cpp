@@ -116,9 +116,8 @@ void send_file(std::string const& filename, Socket const& socket)
 
 int main()
 {
-//    int s;
     struct sockaddr_in my_addr;
-    const char *header="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+    const std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
 
     // Construct address information
     my_addr.sin_family = AF_INET;
@@ -139,14 +138,14 @@ int main()
 
     while(1)
     {
-        auto request_handler = [&] (int socket){
+        auto request_handler = [&] (int socket, int delay = 2){
             char data[512];
             char filename[256];
             auto n = recv(socket, data, 512, 0);              // recieve the request using fd
             data[n] = 0;                          // NUL terminate it
             sscanf(data, "GET /%s ", filename);   // get the name of the file
-            send(socket, header, strlen(header), 0);   // send the header
-            std::this_thread::sleep_for(std::chrono::seconds(10));
+            send(socket, header.c_str(), header.size(), 0);   // send the header
+            std::this_thread::sleep_for(std::chrono::seconds(delay));
             send_file(filename, socket);
             close(socket);                    // close the socket
         };
